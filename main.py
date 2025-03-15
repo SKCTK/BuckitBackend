@@ -1,1 +1,7 @@
-print("Hello Dude!")
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/")
+async def root():
+    return {"message": "Motha fuckin Backend"}
