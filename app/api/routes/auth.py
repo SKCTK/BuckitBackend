@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import hashlib
 import base64
 import uuid
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC  # Added UTC import
 from jose import jwt
 import os
 from dotenv import load_dotenv
@@ -66,7 +66,7 @@ async def token(
         raise HTTPException(status_code=400, detail="Invalid code verifier")
     
     # Generate the JWT access token.
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Updated to use datetime.now(UTC)
     token_payload = {
         "sub": stored["client_id"],
         "exp": expire
