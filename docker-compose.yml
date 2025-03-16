@@ -1,18 +1,21 @@
 services:
   backend:
-    image: chitangchin/finbackend:dev
+    image: chitangchin/finbackend:latest
     ports:
       - "8080:8080"
     container_name: fastapi-backend
 
   database:
     container_name: sqldb
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: chitangchin/finbackend_sql:latest
     ports:
       - "1433:1433"
     volumes:
-      - /var/opt/mssql
+      - mssql_data:/var/opt/mssql
     environment:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=azureaihack2025!
       - MSSQL_PID=Developer
+
+volumes:
+  mssql_data:
