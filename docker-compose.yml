@@ -4,6 +4,13 @@ services:
     ports:
       - "8080:8080"
     container_name: fastapi-backend
+    environment:
+      DATABASE_URL: "mssql+pyodbc://sa:${SA_PASSWORD}@database/FinancialBudgetApp?driver=ODBC+Driver+17+for+SQL+Server"
+      SECRET_KEY: "${SECRET_KEY}"
+      ALGORITHM: "#{ALGORITHM}"
+      ACCESS_TOKEN_EXPIRE_MINUTES: 30
+    depends_on:
+      - database
 
   database:
     container_name: sqldb
@@ -14,7 +21,7 @@ services:
       - mssql_data:/var/opt/mssql
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=azureaihack2025!
+      - SA_PASSWORD=${SA_PASSWORD}azureaihack2025!
       - MSSQL_PID=Developer
 
 volumes:
