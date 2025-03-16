@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ...model import models, schemas
+from ..model import models, schemas
 
 def get_income(db: Session, income_id: int):
     return db.query(models.Income).filter(models.Income.id == income_id).first()
 
 def create_income(db: Session, income: schemas.IncomeCreate):
-    db_income = models.Income(**income.dict())
+    db_income = models.Income(**income.model_dump())
     db.add(db_income)
     db.commit()
     db.refresh(db_income)

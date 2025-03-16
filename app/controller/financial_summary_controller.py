@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ...model import models, schemas
+from ..model import models, schemas
 
 def get_financial_summary(db: Session, financial_summary_id: int):
     return db.query(models.FinancialSummary).filter(models.FinancialSummary.id == financial_summary_id).first()
 
 def create_financial_summary(db: Session, financial_summary: schemas.FinancialSummaryCreate):
-    db_financial_summary = models.FinancialSummary(**financial_summary.dict())
+    db_financial_summary = models.FinancialSummary(**financial_summary.model_dump())
     db.add(db_financial_summary)
     db.commit()
     db.refresh(db_financial_summary)

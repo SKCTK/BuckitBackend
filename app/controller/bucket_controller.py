@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ...model import models, schemas
+from ..model import models, schemas
 
 def get_bucket(db: Session, bucket_id: int):
     return db.query(models.Bucket).filter(models.Bucket.id == bucket_id).first()
 
 def create_bucket(db: Session, bucket: schemas.BucketCreate):
-    db_bucket = models.Bucket(**bucket.dict())
+    db_bucket = models.Bucket(**bucket.model_dump())
     db.add(db_bucket)
     db.commit()
     db.refresh(db_bucket)

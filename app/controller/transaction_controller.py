@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ...model import models, schemas
+from ..model import models, schemas
 
 def get_transaction(db: Session, transaction_id: int):
     return db.query(models.Transaction).filter(models.Transaction.id == transaction_id).first()
 
 def create_transaction(db: Session, transaction: schemas.TransactionCreate):
-    db_transaction = models.Transaction(**transaction.dict())
+    db_transaction = models.Transaction(**transaction.model_dump())
     db.add(db_transaction)
     db.commit()
     db.refresh(db_transaction)

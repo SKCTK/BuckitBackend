@@ -1,11 +1,11 @@
 from sqlalchemy.orm import Session
-from ...model import models, schemas
+from ..model import models, schemas
 
 def get_expenses(db: Session, expenses_id: int):
     return db.query(models.Expenses).filter(models.Expenses.id == expenses_id).first()
 
 def create_expenses(db: Session, expenses: schemas.ExpensesCreate):
-    db_expenses = models.Expenses(**expenses.dict())
+    db_expenses = models.Expenses(**expenses.model_dump())
     db.add(db_expenses)
     db.commit()
     db.refresh(db_expenses)
