@@ -2,3 +2,4 @@
 *cache
 /.venv/
 coverage.xml
+.env
