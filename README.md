@@ -1,5 +1,9 @@
 # Finance Hack API
 
+[![Docker Image Build and Push](https://github.com/AzureAIDevHackathon/Backend/actions/workflows/docker-build-and-test-validation.yml/badge.svg)](https://github.com/AzureAIDevHackathon/Backend/actions/workflows/docker-build-and-test-validation.yml)
+
+[![Build, Test and Deploy](https://github.com/AzureAIDevHackathon/Backend/actions/workflows/docker-build-and-test-validation.yml/badge.svg)](https://github.com/AzureAIDevHackathon/Backend/actions/workflows/docker-build-and-test-validation.yml)
+
 ## Getting Started
 
 ### Backend Setup
