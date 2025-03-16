@@ -36,3 +36,37 @@ python -m pip install --upgrade pip
 ```
 pip install -r requirements.txt
 ```
+
+
+The server will run on
+
+127.0.0.1:8080
+
+or
+
+localhost:8080
+
+NOT
+
+0.0.0.0:8080
+
+#
+
+Sign up for Docker on Docker Hub
+
+Download Docker Desktop
+
+Download Extensions to view/modify schema:
+SQL Server (mssql)
+
+credentials
+
+![alt text](public/image.png)
+
+advanced credentials
+
+![alt text](public/image2.png)
+
+Expected
+
+![alt text](public/image3.png)
