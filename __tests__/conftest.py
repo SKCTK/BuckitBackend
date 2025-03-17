@@ -1,6 +1,12 @@
 import sys
 from pathlib import Path
 import pytest
+import os
+from dotenv import load_dotenv
+
+# Load test environment variables from __tests__/.env.test
+test_env_path = Path(__file__).parent / ".env.test"
+load_dotenv(test_env_path)
 
 # Add the project root directory to the Python path properly
 root_dir = Path(__file__).parent.parent
@@ -14,8 +20,8 @@ from app.model.models import Base  # Import Base from models directly
 from app.database import get_db
 from app.main import app
 
-# Use in-memory SQLite for testing
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+# Use in-memory SQLite for testing - updated to store in __tests__ directory
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./__tests__/test.db")
 
 @pytest.fixture
 def test_db():

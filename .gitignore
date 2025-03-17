@@ -3,3 +3,5 @@
 /.venv/
 coverage.xml
 .env
+__tests__/test.db
+__tests__/test.db-journal

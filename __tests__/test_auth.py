@@ -5,6 +5,7 @@ import base64
 import hashlib
 import os
 from unittest.mock import patch
+from dotenv import load_dotenv
 
 # Import the router to test
 from app.api.routes.auth import router, oauth_store
@@ -17,10 +18,15 @@ client = TestClient(app)
 @pytest.fixture
 def mock_env_variables():
     """Mock environment variables for testing"""
+    # Load values from .env.test in __tests__ directory
+    env_path = Path(__file__).parent / ".env.test"
+    load_dotenv(env_path)
+    
+    # Use the loaded values or fallback to defaults
     with patch.dict(os.environ, {
-        "SECRET_KEY": "test-secret-key",
-        "ALGORITHM": "HS256",
-        "ACCESS_TOKEN_EXPIRE_MINUTES": "30"
+        "SECRET_KEY": os.getenv("SECRET_KEY", "test-secret-key"),
+        "ALGORITHM": os.getenv("ALGORITHM", "HS256"),
+        "ACCESS_TOKEN_EXPIRE_MINUTES": os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30")
     }):
         yield
 
