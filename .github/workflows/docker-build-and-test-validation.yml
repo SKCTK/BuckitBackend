@@ -58,8 +58,8 @@ jobs:
       # Simple Docker build and push without Buildx
       - name: Build and push
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.tags.outputs.TAG }} .
-          docker push ${{ secrets.DOCKER_USERNAME }}/backend:${{ steps.tags.outputs.TAG }}
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/finbackend:${{ steps.tags.outputs.TAG }} .
+          docker push ${{ secrets.DOCKER_USERNAME }}/finbackend:${{ steps.tags.outputs.TAG }}
 
       # # Scan the image for vulnerabilities with correct parameters
       # - name: Docker Scout Scan
