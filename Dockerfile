@@ -1,8 +1,14 @@
 FROM python:3.12
 WORKDIR /app
 
-# Install the application dependencies
+# Install ODBC dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    unixodbc \
+    unixodbc-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 COPY requirements.txt ./
+COPY .env ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy in the source code

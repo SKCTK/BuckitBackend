@@ -1,6 +1,6 @@
 services:
   backend:
-    image: chitangchin/finbackend:latest
+    image: chitangchin/backend:main
     ports:
       - "8080:8080"
     container_name: fastapi-backend
@@ -14,7 +14,7 @@ services:
 
   database:
     container_name: sqldb
-    image: chitangchin/finbackend_sql:latest
+    image: mcr.microsoft.com/mssql/server:2022-latest
     ports:
       - "1433:1433"
     volumes:
