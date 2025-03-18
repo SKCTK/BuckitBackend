@@ -1,6 +1,6 @@
 services:
   backend:
-    image: chitangchin/backend:main
+    image: chitangchin/finbackend:dev
     ports:
       - "8080:8080"
     container_name: fastapi-backend
