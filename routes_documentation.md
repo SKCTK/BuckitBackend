@@ -18,6 +18,8 @@ Below is an example of a complete user profile with their financial data:
     "savings_balance": 15750.25,
     "investment_balance": 42000.00,
     "debt_balance": 8500.00,
+    "income_id" : 789,
+    "expense_id" : 101,
     "last_updated": "2023-06-01T12:00:00Z"
   },
   "income": {
