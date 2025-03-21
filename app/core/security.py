@@ -2,7 +2,7 @@ import hashlib
 import os
 import base64
 from datetime import datetime, timedelta, UTC
-from typing import Optional
+from typing import Optional, Tuple
 import os
 from jose import jwt
 from dotenv import load_dotenv
@@ -16,9 +16,10 @@ ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
 
 def get_password_hash(password: str) -> str:
-    """Generate password hash with salt."""
+    """Generate password hash."""
+    # This function is now used differently - the salt is handled in user_controller
+    # Kept for backwards compatibility with tests
     salt = os.urandom(32)  # 32 bytes = 256 bits
-    salt_b64 = base64.b64encode(salt).decode('utf-8')
     
     # Hash the password with the salt
     key = hashlib.pbkdf2_hmac(
