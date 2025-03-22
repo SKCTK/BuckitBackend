@@ -23,25 +23,25 @@ def test_create_bucket(client, test_user):
     assert data["current_saved_amount"] == 5000.0
     assert "id" in data
 
-def test_get_bucket(client, test_bucket):
+def test_get_bucket(client, test_user, test_bucket):
     """Test getting a bucket by ID."""
-    response = client.get(f"/buckets/{test_bucket.id}")
+    response = client.get(f"/buckets/{test_bucket.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["name"] == test_bucket.name
     assert data["target_amount"] == test_bucket.target_amount
     assert data["id"] == test_bucket.id
 
-def test_get_nonexistent_bucket(client):
+def test_get_nonexistent_bucket(client, test_user):
     """Test getting a bucket that doesn't exist."""
-    response = client.get("/buckets/999")
+    response = client.get(f"/buckets/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Bucket not found" in response.json()["detail"]
 
-def test_update_bucket(client, test_bucket):
+def test_update_bucket(client, test_user, test_bucket):
     """Test updating a bucket."""
     response = client.put(
-        f"/buckets/{test_bucket.id}",
+        f"/buckets/{test_bucket.id}?user_id={test_user.id}",
         json={
             "name": "Updated Vacation",
             "target_amount": 1500.0,
@@ -56,10 +56,10 @@ def test_update_bucket(client, test_bucket):
     assert data["current_saved_amount"] == 500.0
     assert data["id"] == test_bucket.id
 
-def test_update_nonexistent_bucket(client):
+def test_update_nonexistent_bucket(client, test_user):
     """Test updating a bucket that doesn't exist."""
     response = client.put(
-        "/buckets/999",
+        f"/buckets/999?user_id={test_user.id}",
         json={
             "name": "Nonexistent Bucket"
         }
@@ -67,19 +67,19 @@ def test_update_nonexistent_bucket(client):
     assert response.status_code == 404
     assert "Bucket not found" in response.json()["detail"]
 
-def test_delete_bucket(client, test_bucket):
+def test_delete_bucket(client, test_user, test_bucket):
     """Test deleting a bucket."""
-    response = client.delete(f"/buckets/{test_bucket.id}")
+    response = client.delete(f"/buckets/{test_bucket.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == test_bucket.id
     
     # Verify the bucket was deleted
-    response = client.get(f"/buckets/{test_bucket.id}")
+    response = client.get(f"/buckets/{test_bucket.id}?user_id={test_user.id}")
     assert response.status_code == 404
 
-def test_delete_nonexistent_bucket(client):
+def test_delete_nonexistent_bucket(client, test_user):
     """Test deleting a bucket that doesn't exist."""
-    response = client.delete("/buckets/999")
+    response = client.delete(f"/buckets/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Bucket not found" in response.json()["detail"]
