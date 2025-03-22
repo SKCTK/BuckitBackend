@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 import os
 from dotenv import load_dotenv
+from unittest.mock import patch, MagicMock
 
 # Load test environment variables from __tests__/.env.test
 test_env_path = Path(__file__).parent / ".env.test"
@@ -176,3 +177,52 @@ def test_transaction(test_db, test_user):
     test_db.commit()
     test_db.refresh(transaction)
     return transaction
+
+@pytest.fixture
+def mock_redis_service():
+    """Mock Redis service for testing."""
+    with patch('app.core.redis_manager.get_redis_connection') as mock_get_redis:
+        # Create a mock Redis client
+        mock_redis = MagicMock()
+        
+        # Setup mock methods for Redis
+        mock_pipeline = MagicMock()
+        mock_redis.pipeline.return_value = mock_pipeline
+        mock_pipeline.get.return_value = mock_pipeline
+        mock_pipeline.delete.return_value = mock_pipeline
+        
+        # Store data in memory
+        redis_data = {}
+        
+        # Mock get method
+        def mock_get(key):
+            return redis_data.get(key)
+        mock_redis.get.side_effect = mock_get
+        
+        # Mock setex method
+        def mock_setex(key, expiry, value):
+            redis_data[key] = value
+            return True
+        mock_redis.setex.side_effect = mock_setex
+        
+        # Mock delete method
+        def mock_delete(key):
+            if key in redis_data:
+                del redis_data[key]
+                return 1
+            return 0
+        mock_redis.delete.side_effect = mock_delete
+        
+        # Mock pipeline execute method
+        def mock_execute():
+            key = mock_pipeline.get.call_args[0][0]
+            value = redis_data.get(key)
+            if key in redis_data:
+                del redis_data[key]
+            return [value, 1 if value else 0]
+        mock_pipeline.execute.side_effect = mock_execute
+        
+        # Setup the mock connection
+        mock_get_redis.return_value = mock_redis
+        
+        yield redis_data

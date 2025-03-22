@@ -19,25 +19,25 @@ def test_create_income(client, test_financial_summary):
     assert data["financial_summary_id"] == test_financial_summary.id
     assert "id" in data
 
-def test_get_income(client, test_income):
+def test_get_income(client, test_user, test_income):
     """Test getting income by ID."""
-    response = client.get(f"/incomes/{test_income.id}")
+    response = client.get(f"/incomes/{test_income.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["salary"] == test_income.salary
     assert data["investments"] == test_income.investments
     assert data["id"] == test_income.id
 
-def test_get_nonexistent_income(client):
+def test_get_nonexistent_income(client, test_user):
     """Test getting income that doesn't exist."""
-    response = client.get("/incomes/999")
+    response = client.get(f"/incomes/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Income not found" in response.json()["detail"]
 
-def test_update_income(client, test_income):
+def test_update_income(client, test_user, test_income):
     """Test updating income."""
     response = client.put(
-        f"/incomes/{test_income.id}",
+        f"/incomes/{test_income.id}?user_id={test_user.id}",
         json={
             "salary": 6500.0,
             "investments": 700.0
@@ -49,10 +49,10 @@ def test_update_income(client, test_income):
     assert data["investments"] == 700.0
     assert data["id"] == test_income.id
 
-def test_update_nonexistent_income(client):
+def test_update_nonexistent_income(client, test_user):
     """Test updating income that doesn't exist."""
     response = client.put(
-        "/incomes/999",
+        f"/incomes/999?user_id={test_user.id}",
         json={
             "salary": 7000.0
         }
@@ -60,19 +60,19 @@ def test_update_nonexistent_income(client):
     assert response.status_code == 404
     assert "Income not found" in response.json()["detail"]
 
-def test_delete_income(client, test_income):
+def test_delete_income(client, test_user, test_income):
     """Test deleting income."""
-    response = client.delete(f"/incomes/{test_income.id}")
+    response = client.delete(f"/incomes/{test_income.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == test_income.id
     
     # Verify the income was deleted
-    response = client.get(f"/incomes/{test_income.id}")
+    response = client.get(f"/incomes/{test_income.id}?user_id={test_user.id}")
     assert response.status_code == 404
 
-def test_delete_nonexistent_income(client):
+def test_delete_nonexistent_income(client, test_user):
     """Test deleting income that doesn't exist."""
-    response = client.delete("/incomes/999")
+    response = client.delete(f"/incomes/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Income not found" in response.json()["detail"]

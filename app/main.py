@@ -1,4 +1,6 @@
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, Depends, Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exception_handlers import http_exception_handler
 from .api.routes import (
     auth_router, user_routes, transaction_routes,
     bucket_routes, expenses_routes, income_routes, 
@@ -11,6 +13,8 @@ from dotenv import load_dotenv
 from .database import engine, Base
 from sqlalchemy.exc import SQLAlchemyError
 from contextlib import asynccontextmanager
+import redis
+from .core.redis_manager import get_redis_connection
 
 # Configure logging
 logging.basicConfig(
@@ -29,6 +33,14 @@ async def lifespan(app: FastAPI):
     try:
         Base.metadata.create_all(bind=engine)
         logger.info("Database tables created or verified")
+        
+        # Test Redis connection on startup
+        try:
+            r = get_redis_connection()
+            r.ping()
+            logger.info("Redis connection established successfully")
+        except redis.RedisError as e:
+            logger.error(f"Redis connection error: {e}")
     except SQLAlchemyError as e:
         logger.error(f"Database initialization error: {e}")
     except Exception as e:
@@ -41,6 +53,15 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app with lifespan
 app = FastAPI(lifespan=lifespan)
+
+# Global exception handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "An unexpected error occurred. Please try again later."}
+    )
 
 # Include routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])

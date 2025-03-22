@@ -3,19 +3,19 @@ from pydantic import BaseModel
 import hashlib
 import base64
 import uuid
-from datetime import datetime, timedelta, UTC  # Added UTC import
+from datetime import datetime, timedelta, UTC
 from jose import jwt
 import os
 from dotenv import load_dotenv
+from ...core.redis_manager import store_auth_code, safely_use_and_delete_auth_code
+import logging
 
 # Load environment variables
 load_dotenv()
 
-router = APIRouter()
+logger = logging.getLogger(__name__)
 
-# In-memory store for demo purposes.
-# In production, use a persistent storage solution.
-oauth_store = {}
+router = APIRouter()
 
 # Load secrets and config from environment variables
 SECRET_KEY = os.getenv("SECRET_KEY")
@@ -32,15 +32,24 @@ async def authorize(
     redirect_uri: str = Form(...),
     code_challenge: str = Form(...),
 ):
-    # Validate client_id and redirect_uri as needed.
-    # Generate a unique authorization code.
+    # Generate a unique authorization code
     auth_code = str(uuid.uuid4())
-    # Store client details along with the code_challenge.
-    oauth_store[auth_code] = {
-        "client_id": client_id,
-        "redirect_uri": redirect_uri,
-        "code_challenge": code_challenge
-    }
+    
+    # Store with TTL (10 minutes) in Redis
+    result = store_auth_code(
+        auth_code,
+        {
+            "client_id": client_id,
+            "redirect_uri": redirect_uri,
+            "code_challenge": code_challenge,
+            "created_at": datetime.now(UTC).isoformat()
+        }
+    )
+    
+    if not result:
+        logger.error("Failed to store authorization code in Redis")
+        raise HTTPException(status_code=500, detail="Failed to generate authorization code")
+    
     return {"auth_code": auth_code}
 
 @router.post("/token")
@@ -52,9 +61,10 @@ async def token(
     if grant_type != "authorization_code":
         raise HTTPException(status_code=400, detail="Unsupported grant type")
     
-    stored = oauth_store.get(code)
+    # Use Redis pipeline to atomically get and delete the code
+    stored = safely_use_and_delete_auth_code(code)
     if not stored:
-        raise HTTPException(status_code=400, detail="Invalid authorization code")
+        raise HTTPException(status_code=400, detail="Invalid or expired code")
     
     def compute_code_challenge(verifier: str) -> str:
         digest = hashlib.sha256(verifier.encode()).digest()
@@ -66,14 +76,11 @@ async def token(
         raise HTTPException(status_code=400, detail="Invalid code verifier")
     
     # Generate the JWT access token.
-    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)  # Updated to use datetime.now(UTC)
+    expire = datetime.now(UTC) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     token_payload = {
         "sub": stored["client_id"],
         "exp": expire
     }
     access_token = jwt.encode(token_payload, SECRET_KEY, algorithm=ALGORITHM)
-
-    # Clean up stored auth code (one-time use)
-    del oauth_store[code]
 
     return Token(access_token=access_token, token_type="bearer")
