@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from ..model import models, schemas
 from ..core.security import get_password_hash
+import os
+import base64
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -9,12 +11,25 @@ def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
 def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = get_password_hash(user.password)
+    # Generate a salt
+    salt = os.urandom(32)
+    salt_b64 = base64.b64encode(salt).decode('utf-8')
+    
+    # Generate password hash with the salt
+    import hashlib
+    key = hashlib.pbkdf2_hmac(
+        'sha256',
+        user.password.encode('utf-8'),
+        salt,
+        100000  # number of iterations
+    )
+    password_hash = base64.b64encode(key).decode('utf-8')
+    
     db_user = models.User(
         name=user.name,
         email=user.email,
-        password_hash=hashed_password,
-        password_salt="salt"  # Replace with actual salt generation
+        password_hash=password_hash,
+        password_salt=salt_b64
     )
     db.add(db_user)
     db.commit()

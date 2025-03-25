@@ -23,25 +23,25 @@ def test_create_transaction(client, test_user):
     assert data["category"] == "Food"
     assert "id" in data
 
-def test_get_transaction(client, test_transaction):
+def test_get_transaction(client, test_user, test_transaction):
     """Test getting a transaction by ID."""
-    response = client.get(f"/transactions/{test_transaction.id}")
+    response = client.get(f"/transactions/{test_transaction.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["amount"] == test_transaction.amount
     assert data["description"] == test_transaction.description
     assert data["id"] == test_transaction.id
 
-def test_get_nonexistent_transaction(client):
+def test_get_nonexistent_transaction(client, test_user):
     """Test getting a transaction that doesn't exist."""
-    response = client.get("/transactions/999")
+    response = client.get(f"/transactions/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Transaction not found" in response.json()["detail"]
 
-def test_update_transaction(client, test_transaction):
+def test_update_transaction(client, test_user, test_transaction):
     """Test updating a transaction."""
     response = client.put(
-        f"/transactions/{test_transaction.id}",
+        f"/transactions/{test_transaction.id}?user_id={test_user.id}",
         json={
             "amount": 85.75,
             "description": "Updated Dinner",
@@ -55,10 +55,10 @@ def test_update_transaction(client, test_transaction):
     assert data["category"] == "Dining"
     assert data["id"] == test_transaction.id
 
-def test_update_nonexistent_transaction(client):
+def test_update_nonexistent_transaction(client, test_user):
     """Test updating a transaction that doesn't exist."""
     response = client.put(
-        "/transactions/999",
+        f"/transactions/999?user_id={test_user.id}",
         json={
             "amount": 100.0
         }
@@ -66,19 +66,19 @@ def test_update_nonexistent_transaction(client):
     assert response.status_code == 404
     assert "Transaction not found" in response.json()["detail"]
 
-def test_delete_transaction(client, test_transaction):
+def test_delete_transaction(client, test_user, test_transaction):
     """Test deleting a transaction."""
-    response = client.delete(f"/transactions/{test_transaction.id}")
+    response = client.delete(f"/transactions/{test_transaction.id}?user_id={test_user.id}")
     assert response.status_code == 200
     data = response.json()
     assert data["id"] == test_transaction.id
     
     # Verify the transaction was deleted
-    response = client.get(f"/transactions/{test_transaction.id}")
+    response = client.get(f"/transactions/{test_transaction.id}?user_id={test_user.id}")
     assert response.status_code == 404
 
-def test_delete_nonexistent_transaction(client):
+def test_delete_nonexistent_transaction(client, test_user):
     """Test deleting a transaction that doesn't exist."""
-    response = client.delete("/transactions/999")
+    response = client.delete(f"/transactions/999?user_id={test_user.id}")
     assert response.status_code == 404
     assert "Transaction not found" in response.json()["detail"]
