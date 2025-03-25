@@ -23,11 +23,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy in the source code
 COPY app ./app
+COPY alembic.ini ./
+COPY migrations ./migrations
+
 EXPOSE 8080
 
-# Setup an app user so the container doesn't run as the root user
-RUN useradd app
-USER app
-
-# Update this line to point to the correct module path
+# Use CMD instead of ENTRYPOINT for easier debugging
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

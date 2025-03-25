@@ -14,11 +14,16 @@ services:
       ACCESS_TOKEN_EXPIRE_MINUTES: 30
       REDIS_HOST: "redis"
       REDIS_PORT: 6379
+      DB_USER: sa
+      DB_PASSWORD: azureaihack2025!
+      DB_SERVER: database
+      DB_PORT: 1433
+      DB_NAME: FinancialBudgetApp
     depends_on:
       - database
+      - db_init
       - redis
     restart: always
-
   database:
     container_name: sqldb
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -32,6 +37,11 @@ services:
       - MSSQL_PID=Developer
       - MSSQL_MEMORY_LIMIT_MB=2048
 
+  db_init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - database
+    command: /bin/bash -c "sleep 10 && /opt/mssql-tools/bin/sqlcmd -S database -U sa -P \"azureaihack2025!\" -Q \"CREATE DATABASE [FinancialBudgetApp];\""
   redis:
     container_name: redis
     image: redis:alpine

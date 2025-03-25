@@ -45,15 +45,13 @@ docker compose up -d --build
 
 ---
 
-### Local Backend Setup
-
-1. Create a virtual environment
+8. Create a virtual environment
 
 ```
 python -m venv .venv
 ```
 
-2. Activate the virtual environment
+9. Activate the virtual environment
 
 In windows: 
 
@@ -74,19 +72,23 @@ In Linux, macOS
 source .venv/bin/activate
 ```
 
-3. Upgrading pip
+10. Upgrading pip
 
 ```
 python -m pip install --upgrade pip
 ```
 
-4. Installing packages
+11. Installing packages
 
 ```
 pip install -r requirements.txt
 ```
 
-5. Running the server
+12. Database
+
+```
+alembic upgrade head
+```
 
 The server will run on:
 
