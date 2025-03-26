@@ -15,6 +15,11 @@ from sqlalchemy.exc import SQLAlchemyError
 from contextlib import asynccontextmanager
 import redis
 from .core.redis_manager import get_redis_connection
+from semantic_kernel import Kernel 
+from app.rootdialog import BucketPlugin
+from pydantic import BaseModel
+
+
 
 # Configure logging
 logging.basicConfig(
@@ -25,6 +30,10 @@ logger = logging.getLogger(__name__)
 
 # Load environment variables
 load_dotenv()
+
+class ChatRequest(BaseModel):
+    user_input: str
+
 
 # Lifespan context manager (replaces on_event)
 @asynccontextmanager
@@ -62,6 +71,18 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={"detail": "An unexpected error occurred. Please try again later."}
     )
+
+# Create the Semantic Kernel
+kernel = Kernel()
+
+# Create a simple endpoint to interact with the chatbot
+async def chat(user_input: str):
+    # Simulate chatbot processing (replace with actual chatbot logic)
+    return f"Chatbot response to: {user_input}"
+
+@app.post("/invoke-chatbot")
+async def invoke_chatbot(request: ChatRequest):
+    return {"response": f"You said: {request.message}"}
 
 # Include routers
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
