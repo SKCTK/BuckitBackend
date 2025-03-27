@@ -12,7 +12,24 @@ class BucketPlugin:
     """Plugin for managing budget buckets using Semantic Kernel."""
 
     @kernel_function(
-        description="Create a new budget bucket for a user"
+    description="""Create a new budget bucket for a user.
+                        
+    Buckets help users allocate savings toward specific financial goals.
+
+    This is a step-by-step process. Ask EXACTLY ONE question at a time.
+    NEVER present a numbered list of all required information.
+    NEVER mention upcoming questions before they're reached.
+    NEVER ask about status - all buckets are 'active' by default.
+    Accept natural language date descriptions without requiring a specific format.
+
+    Ask questions in this exact sequence:
+    1. Name of bucket
+    2. Target amount
+    3. Current saved amount
+    4. Priority (1-10)
+    5. Deadline
+
+    Each question must be in its own separate response."""
     )
     async def create_bucket(
         self, 
@@ -26,39 +43,6 @@ class BucketPlugin:
     ) -> str:
         """
         Create a new budget bucket for a user.
-                        
-        Buckets help users allocate savings toward specific financial goals.
-
-        Prompt:
-        ⚠️ CRITICAL INSTRUCTION: This is a step-by-step process. 
-        DO NOT summarize all questions into a single message.
-        Ask EXACTLY ONE question, then STOP and WAIT for the user's response.
-
-        NEVER present a numbered list of all required information.
-        NEVER mention upcoming questions before they're reached.
-        NEVER say "Please provide me with the following details".
-        NEVER ask for status of the bucket, it is always "active" on first creation.
-
-        First message must ONLY contain the first question about name.
-
-        Follow this exact sequence:
-
-        1. First, ONLY respond with: "What would you like to name this savings bucket?" (e.g., "Vacation Fund", "Emergency Savings")
-        [STOP HERE]
-
-        2. After user provides a name, ONLY respond with: "How much money do you want to save in this bucket?"
-        [STOP HERE]
-
-        3. After user provides target amount, ONLY respond with: "How much have you already saved toward this goal?"
-        [STOP HERE]
-
-        4. After user provides current amount, ONLY respond with: "On a scale of 1-10, how important is this savings goal to you?"
-        [STOP HERE]
-
-        5. After user provides priority, ONLY respond with: "When do you want to reach this savings goal?"
-        [STOP HERE]
-
-        Never ask users to format their response in a specific way. Parse their natural language responses into the required format.
         """
         try:
             # Parse parameters
