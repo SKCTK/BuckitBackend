@@ -5,10 +5,11 @@ from typing import Annotated,List
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from semantic_kernel.functions import kernel_function
-from model import models  
+from model.models import Bucket  
 from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
+from azure import AzureAIAgent, AzureAIAgentSettings
 
 
 class BucketPlugin:
@@ -24,8 +25,8 @@ class BucketPlugin:
         limit: Annotated[int, "Max number of records to return."] = 100
     ) -> Annotated[List[dict], "List of user buckets."]:
         """Fetch all buckets for a user, returning a list of dictionaries."""
-        user_buckets = self.db.query(models.Bucket).filter(models.Bucket.user_id == user_id)
-        user_buckets = user_buckets.order_by(models.Bucket.id.desc()).offset(skip).limit(limit).all()
+        user_buckets = self.db.query(Bucket.Bucket).filter(Bucket.Bucket.user_id == user_id)
+        user_buckets = user_buckets.order_by(Bucket.Bucket.id.desc()).offset(skip).limit(limit).all()
 
         return [
             {
@@ -45,7 +46,7 @@ class BucketPlugin:
         self, bucket_id: Annotated[int, "ID of the bucket to retrieve."]
     ) -> Annotated[dict, "Bucket details."]:
         """Fetch a bucket by ID and return its details as a dictionary."""
-        bucket = self.db.query(models.Bucket).filter(models.Bucket.id == bucket_id).first()
+        bucket = self.db.query(Bucket.Bucket).filter(Bucket.Bucket.id == bucket_id).first()
         if not bucket:
             return {"message": "Bucket not found."}  # Avoiding raise
         
