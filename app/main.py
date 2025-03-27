@@ -31,6 +31,9 @@ from semantic_kernel.connectors.ai.open_ai import (
 )
 from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
 
+# Import the BucketPlugin
+from .plugins.bucket_plugin import BucketPlugin
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -103,7 +106,12 @@ async def global_exception_handler(request: Request, exc: Exception):
 async def setup_kernel() -> Kernel:
     """Create and configure a Semantic Kernel for the chat."""
     kernel = Kernel()
-    # You can add plugins here later if needed
+    
+    # Register the BucketPlugin using the exact format from documentation
+    bucket_plugin = BucketPlugin()
+    kernel.add_plugin(bucket_plugin, plugin_name="budget")
+    
+    logger.info("Bucket Plugin registered with Semantic Kernel")
     return kernel
 
 # Direct WebSocket endpoint in main.py
@@ -119,27 +127,46 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
         # Use the exact values that worked in your test
         api_key = os.getenv("AZURE_OPENAI_API_KEY")
         endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
-        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")  # Your confirmed working deployment
-        api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")  # The version that worked
+        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT", "gpt-4o-mini")
+        api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
         
         if not api_key or not endpoint:
             raise ValueError("Azure OpenAI credentials not found")
         
+        # Setup kernel with our plugins
         kernel = await setup_kernel()
         
-        # Instead of using Realtime API which might not be fully supported yet,
-        # let's implement a simulated chat using standard completions API
+        # Configure Azure OpenAI service with function calling
+        from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
+        from semantic_kernel.connectors.ai.prompt_execution_settings import PromptExecutionSettings
+        from semantic_kernel.connectors.ai.function_choice_behavior import FunctionChoiceBehavior
+        from semantic_kernel.functions.kernel_arguments import KernelArguments
         
-        # Create Azure OpenAI client
-        from openai import AzureOpenAI
-        
-        client = AzureOpenAI(
+        service_id = "azure-chat"
+        azure_chat_service = AzureChatCompletion(
+            service_id=service_id,
+            deployment_name=deployment,
+            endpoint=endpoint,
             api_key=api_key,
-            azure_endpoint=endpoint,
             api_version=api_version
         )
         
-        logger.info(f"Azure OpenAI client created for user {user_id} with deployment {deployment}")
+        # Add the service to the kernel
+        kernel.add_service(azure_chat_service)
+        
+        logger.info(f"Azure OpenAI service created for user {user_id} with deployment {deployment} and function calling enabled")
+        
+        # Create a chat history
+        chat_history = ChatHistory()
+        chat_history.add_system_message("""
+        You are a financial advisor assistant helping users with:
+        - Budgeting advice
+        - Investment recommendations
+        - Financial planning
+        
+        Be clear, concise and helpful. When you don't know something,
+        be transparent about it. Don't fabricate financial information.
+        """)
         
         # Chat loop
         while True:
@@ -153,7 +180,9 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
             
             logger.info(f"Message from user {user_id}: {message_text}")
             
-            # Call Azure OpenAI
+            # Add user message to chat history
+            chat_history.add_user_message(message_text)
+            
             try:
                 # Show typing indicator to user
                 await websocket.send_text(json.dumps({
@@ -162,34 +191,41 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
                     "timestamp": datetime.now().isoformat()
                 }))
                 
-                # Get response from Azure OpenAI
-                response = client.chat.completions.create(
-                    model=deployment,
-                    messages=[
-                        {"role": "system", "content": """
-                        You are a financial advisor assistant helping users with:
-                        - Budgeting advice
-                        - Investment recommendations
-                        - Financial planning
-                        
-                        Be clear, concise and helpful. When you don't know something,
-                        be transparent about it. Don't fabricate financial information.
-                        """},
-                        {"role": "user", "content": message_text}
-                    ],
-                    max_tokens=500,
-                    temperature=0.7
+                # Create execution settings with function choice behavior
+                execution_settings = PromptExecutionSettings(
+                    function_choice_behavior=FunctionChoiceBehavior.Auto()
                 )
+                
+                # Create kernel arguments with the settings
+                arguments = KernelArguments(
+                    settings=execution_settings
+                )
+                
+                # Get chat service directly
+                chat_service = kernel.get_service(service_id)
+                
+                # Use get_chat_message_content instead of invoke_prompt
+                response = await chat_service.get_chat_message_content(
+                    chat_history=chat_history,
+                    settings=execution_settings,
+                    kernel=kernel
+                )
+                
+                # Get the response content - response is a ChatMessageContent object
+                result_text = response.content if hasattr(response, "content") else str(response)
+                
+                # Add the assistant's response to chat history
+                chat_history.add_assistant_message(result_text)
                 
                 # Send response back to user
                 await websocket.send_text(json.dumps({
-                    "text": response.choices[0].message.content,
+                    "text": result_text,
                     "sender": "bot",
                     "timestamp": datetime.now().isoformat()
                 }))
                 
             except Exception as e:
-                logger.error(f"Azure OpenAI API error: {str(e)}")
+                logger.error(f"Azure OpenAI API error: {str(e)}", exc_info=True)
                 await websocket.send_text(json.dumps({
                     "text": f"Sorry, I encountered an error: {str(e)}",
                     "sender": "system",
