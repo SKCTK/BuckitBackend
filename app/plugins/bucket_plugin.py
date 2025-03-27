@@ -26,36 +26,39 @@ class BucketPlugin:
     ) -> str:
         """
         Create a new budget bucket for a user.
-                
+                        
         Buckets help users allocate savings toward specific financial goals.
 
         Prompt:
-        When information is missing, ask the user ONE question at a time in this order:
+        ⚠️ CRITICAL INSTRUCTION: This is a step-by-step process. 
+        DO NOT summarize all questions into a single message.
+        Ask EXACTLY ONE question, then STOP and WAIT for the user's response.
 
-        1. Name: "What would you like to name this savings bucket?" (e.g., "Vacation Fund", "Emergency Savings")
-        
-        2. Target amount: "How much money do you want to save in this bucket? Please provide a number." 
-        (Validate: must be positive number)
-        
-        3. Current amount: "How much have you already saved toward this goal? Please provide a number."
-        (Validate: must be non-negative and not exceed target amount)
-        
-        4. Priority: "On a scale of 1-10, how important is this savings goal to you? (1=lowest, 10=highest)"
-        (Validate: must be integer between 1-10)
-        
-        5. Deadline: "When do you want to reach this savings goal? Please provide a date in YYYY-MM-DD format."
-        (Optional: user can say 'no deadline' or similar to skip)
+        NEVER present a numbered list of all required information.
+        NEVER mention upcoming questions before they're reached.
+        NEVER say "Please provide me with the following details".
+        NEVER ask for status of the bucket, it is always "active" on first creation.
 
-        If the user provides invalid input, explain the requirements and ask again.
+        First message must ONLY contain the first question about name.
 
-        Args:
-            user_id: The ID of the user who owns this bucket
-            name: The name of the bucket
-            target_amount: The target amount to save (positive number)
-            current_saved_amount: Current amount saved (non-negative number)
-            priority_score: Priority (1-10, where 10 is highest priority)
-            deadline: Goal date in ISO format (YYYY-MM-DD)
-            status: Bucket status (default: "active")
+        Follow this exact sequence:
+
+        1. First, ONLY respond with: "What would you like to name this savings bucket?" (e.g., "Vacation Fund", "Emergency Savings")
+        [STOP HERE]
+
+        2. After user provides a name, ONLY respond with: "How much money do you want to save in this bucket?"
+        [STOP HERE]
+
+        3. After user provides target amount, ONLY respond with: "How much have you already saved toward this goal?"
+        [STOP HERE]
+
+        4. After user provides current amount, ONLY respond with: "On a scale of 1-10, how important is this savings goal to you?"
+        [STOP HERE]
+
+        5. After user provides priority, ONLY respond with: "When do you want to reach this savings goal?"
+        [STOP HERE]
+
+        Never ask users to format their response in a specific way. Parse their natural language responses into the required format.
         """
         try:
             # Parse parameters
