@@ -9,7 +9,8 @@ from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
 from semantic_kernel.agents.azure_ai import AzureAIAgent, AzureAIAgentSettings
-import model as Bucket 
+from app import model as Bucket
+
 
 
 
