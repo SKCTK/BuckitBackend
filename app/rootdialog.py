@@ -4,8 +4,7 @@ from typing import Annotated,List
 
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from semantic_kernel.functions import kernel_function
-from model.models import Bucket  
+from semantic_kernel.functions import kernel_function 
 from azure.identity.aio import DefaultAzureCredential
 from semantic_kernel.contents import AuthorRole
 from semantic_kernel.functions import kernel_function
