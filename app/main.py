@@ -28,8 +28,7 @@ from semantic_kernel.connectors.ai.open_ai import (
 from semantic_kernel.contents import ChatHistory
 
 # Import the BucketPlugin
-from .plugins.bucket_plugin import BucketPlugin
-from .plugins.financial_summary_plugin import FinancialSummaryPlugin
+from .plugins import BucketPlugin, FinancialSummaryPlugin, IncomePlugin, ExpensePlugin, TransactionPlugin
 
 # Configure logging
 logging.basicConfig(
@@ -105,10 +104,19 @@ async def setup_kernel() -> Kernel:
     kernel = Kernel()
     
     # Register the BucketPlugin using the exact format from documentation
+    # In setup_kernel function in main.py, add:
+# Register the plugins
     bucket_plugin = BucketPlugin()
     financial_summary_plugin = FinancialSummaryPlugin()
+    income_plugin = IncomePlugin()
+    expense_plugin = ExpensePlugin()
+    transaction_plugin = TransactionPlugin()
+
     kernel.add_plugin(bucket_plugin, plugin_name="budget")
     kernel.add_plugin(financial_summary_plugin, plugin_name="financialSummary")
+    kernel.add_plugin(income_plugin, plugin_name="income")
+    kernel.add_plugin(expense_plugin, plugin_name="expense")
+    kernel.add_plugin(transaction_plugin, plugin_name="transaction")
     
     logger.info("Bucket Plugin registered with Semantic Kernel")
     return kernel
@@ -172,6 +180,8 @@ async def websocket_endpoint(websocket: WebSocket, user_id: int):
 
         Be clear, concise and helpful. When you don't know something,
         be transparent about it. Don't fabricate financial information.
+        
+        DO NOT ASK FOR USER ID, it will be passed in by the websocket connection.
         """)
         
         # Chat loop
