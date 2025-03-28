@@ -158,3 +158,101 @@ class BucketPlugin:
             
 #UPDATING BUCKET -------------------------------------------------------
 
+    @kernel_function(
+        description="""Update an existing bucket for the user.
+        
+        User can update any of the following bucket properties:
+        - name
+        - target amount
+        - current saved amount
+        - priority score (1-10)
+        - deadline (parse natural language dates into YYYY-MM-DD)
+        - status (active/completed/paused)
+        
+        Ask the user which bucket they want to update first, then ask which properties they want to change.
+        Only ask about the specific properties they want to modify.
+        
+        Handle the conversation in a natural way - don't try to collect all properties at once.
+        Parse amounts and dates from natural language descriptions.
+        """
+    )
+    async def update_bucket(
+        self,
+        bucket_id: int,
+        name: Optional[str] = None,
+        target_amount: Optional[str] = None,
+        current_saved_amount: Optional[str] = None,
+        priority_score: Optional[str] = None,
+        deadline: Optional[str] = None,
+        status: Optional[str] = None
+    ) -> str:
+        """
+        Update an existing budget bucket for a user.
+        """
+        try:
+            # Parse parameters that were provided
+            update_data = {}
+            
+            if name is not None:
+                update_data["name"] = name
+                
+            if target_amount is not None:
+                update_data["target_amount"] = float(target_amount)
+                
+            if current_saved_amount is not None:
+                update_data["current_saved_amount"] = float(current_saved_amount)
+                
+            if priority_score is not None:
+                update_data["priority_score"] = int(priority_score)
+                
+            if deadline is not None:
+                update_data["deadline"] = deadline
+                
+            if status is not None:
+                update_data["status"] = status
+            
+            # Create update schema
+            bucket_update = schemas.BucketUpdate(**update_data)
+            
+            # Get database session
+            db = next(get_db())
+            
+            # Update bucket using controller
+            try:
+                updated_bucket = bucket_controller.update_bucket(db, bucket_id, bucket_update)
+                
+                if not updated_bucket:
+                    return json.dumps({
+                        "success": False,
+                        "error": f"Bucket with ID {bucket_id} not found"
+                    })
+                
+                # Convert model to dictionary for JSON serialization
+                bucket_dict = {
+                    "id": updated_bucket.id,
+                    "user_id": updated_bucket.user_id,
+                    "name": updated_bucket.name,
+                    "target_amount": updated_bucket.target_amount,
+                    "current_saved_amount": updated_bucket.current_saved_amount,
+                    "priority_score": updated_bucket.priority_score,
+                    "deadline": updated_bucket.deadline.isoformat() if updated_bucket.deadline else None,
+                    "status": updated_bucket.status
+                }
+                
+                return json.dumps({
+                    "success": True,
+                    "message": f"Bucket updated successfully",
+                    "data": bucket_dict
+                })
+                
+            except ValueError as e:
+                return json.dumps({
+                    "success": False,
+                    "error": str(e)
+                })
+                
+        except Exception as e:
+            return json.dumps({
+                "success": False,
+                "error": f"Failed to update bucket: {str(e)}"
+            })
