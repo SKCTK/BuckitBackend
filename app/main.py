@@ -22,17 +22,14 @@ from .core.redis_manager import get_redis_connection
 
 # Correct Semantic Kernel imports
 from semantic_kernel import Kernel
-from semantic_kernel.connectors.ai import FunctionChoiceBehavior
 from semantic_kernel.connectors.ai.open_ai import (
-    AzureRealtimeWebsocket,
-    AzureRealtimeExecutionSettings,
-    ListenEvents,
-    TurnDetection
+    AzureRealtimeWebsocket
 )
-from semantic_kernel.contents import ChatHistory, RealtimeTextEvent
+from semantic_kernel.contents import ChatHistory
 
 # Import the BucketPlugin
 from .plugins.bucket_plugin import BucketPlugin
+from .plugins.financial_summary_plugin import FinancialSummaryPlugin
 
 # Configure logging
 logging.basicConfig(
@@ -109,7 +106,9 @@ async def setup_kernel() -> Kernel:
     
     # Register the BucketPlugin using the exact format from documentation
     bucket_plugin = BucketPlugin()
+    financial_summary_plugin = FinancialSummaryPlugin()
     kernel.add_plugin(bucket_plugin, plugin_name="budget")
+    kernel.add_plugin(financial_summary_plugin, plugin_name="financialSummary")
     
     logger.info("Bucket Plugin registered with Semantic Kernel")
     return kernel
