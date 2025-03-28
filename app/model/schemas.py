@@ -154,3 +154,7 @@ class Bucket(BucketBase):
     model_config = {
         "from_attributes": True
     }
+    
+    def __init__(self, db):
+        super().__init__()
+        self.db = db 

@@ -16,6 +16,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from contextlib import asynccontextmanager
 import redis
 from .core.redis_manager import get_redis_connection
+
+from semantic_kernel.functions import kernel_function
 from semantic_kernel import Kernel 
 from app.rootdialog import BucketPlugin
 from pydantic import BaseModel
@@ -107,6 +109,10 @@ app.include_router(financial_summary_routes, prefix="/financial-summaries", tags
 @app.get("/")
 async def root():
     return {"message": "Im healthy 😎"}
+
+@app.post("/invoke-chatbot")
+async def invoke_chatbot(request: ChatRequest):
+    return {"response": f"You said: {request.message}"}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

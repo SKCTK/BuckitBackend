@@ -46,9 +46,9 @@ you will return a full answer to me as soon as possible.
 kernel = Kernel()
 
 chat_completion = AzureChatCompletion(
-            deployment_name="deployment_name",
-            api_key="api_key",
-            base_url="base_url",
+            deployment_name="gpt-4o-mini",
+            api_key="2UKS6jD0Ek03YrhxfOLPojpl0ePmMjynPzlz5mwkGDduZAozogg0JQQJ99BBACHYHv6XJ3w3AAAAACOGejyl",
+            base_url="https://ai-siwartaouih3420ai439271225501.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview",
     )
 kernel.add_service(chat_completion)
 
@@ -58,7 +58,7 @@ execution_settings.function_choice_behavior = FunctionChoiceBehavior.Auto()
 
 
 # adding plugins to the kernel
-kernel.add_plugin(BucketPlugin(db=get_db),plugin_name="ChatBot")
+kernel.add_plugin(BucketPlugin(),plugin_name="ChatBot")
 
 
 chat_function = kernel.add_function(
@@ -159,6 +159,7 @@ def print_tool_calls(message: ChatMessageContent) -> None:
     
     # Print the formatted tool calls
     print("Tool calls:\n" + "\n\n".join(formatted_tool_calls))
+
 
 async def handle_streaming(
     kernel: Kernel,
