@@ -19,8 +19,8 @@ services:
       DB_SERVER: database
       DB_PORT: 1433
       DB_NAME: FinancialBudgetApp
-      AZURE_OPENAI_API_KEY: 5dEKxbujB5nezhsRa234yQGzK3ocWZN7ouw7gsAxwQXInP3OKlY3JQQJ99BCACHYHv6XJ3w3AAAAACOGgcFO
-      AZURE_OPENAI_ENDPOINT: https://ai-chitangbchin7701ai726091049165.openai.azure.com/openai/deployments/gpt-4o-mini/chat/completions?api-version=2025-01-01-preview
+      AZURE_OPENAI_API_KEY: xxxx
+      AZURE_OPENAI_ENDPOINT: xxxx
       AZURE_OPENAI_DEPLOYMENT: gpt-4o-mini
     depends_on:
       - database
